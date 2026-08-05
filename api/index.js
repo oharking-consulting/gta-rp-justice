@@ -1,20 +1,50 @@
-require('dotenv').config();
-const express = require('express');
-const multer = require('multer');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { GoogleAIFileManager } = require('@google/generative-ai/server');
-const fs = require('fs');
 
-const app = express();
-const upload = multer({ dest: '/tmp/' });
+module.exports = async (req, res) => {
+    // Autoriser le CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
 
-app.use(express.json());
+    if (req.method !== 'POST') {
+        return res.status(405).json({ success: false, error: 'Méthode non autorisée' });
+    }
 
-const promptSysteme = `Tu es un administrateur expert sur GTA V RP (FiveM). 
-Analyse le problème et/ou la vidéo fournie. 
+    try {
+        const apiKey = process.env.GEMINI_API_KEY; //
+        if (!apiKey) {
+            return res.status(500).json({ 
+                success: false, 
+                error: "La clé GEMINI_API_KEY est manquante dans les variables d'environnement Vercel." 
+            });
+        }
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        
+        // Configuration JSON forcée
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-1.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        // Récupération de la description transmise (soit JSON direct, soit FormData)
+        let issueDescription = "";
+        if (typeof req.body === 'string') {
+            try { issueDescription = JSON.parse(req.body).description; } catch(e) { issueDescription = req.body; }
+        } else if (req.body && req.body.description) {
+            issueDescription = req.body.description;
+        }
+
+        if (!issueDescription) {
+            return res.status(400).json({ success: false, error: "Aucune description fournie." });
+        }
+
+        const promptSysteme = `Tu es un administrateur expert sur GTA V RP (FiveM). 
+Analyse le problème fourni.
 
 Renvoie STRICTEMENT un objet JSON valide suivant cette structure exacte :
 {
@@ -73,35 +103,16 @@ Renvoie STRICTEMENT un objet JSON valide suivant cette structure exacte :
 }
 Génère toujours 4 solutions distinctes. Les pourcentages doivent être entre 0 et 100.`;
 
-app.post('/api/analyze', upload.single('video'), async (req, res) => {
-    try {
-        const issueDescription = req.body.description;
-        let promptParts = [promptSysteme, "Problème soumis : " + issueDescription];
-
-        if (req.file) {
-            const uploadResult = await fileManager.uploadFile(req.file.path, {
-                mimeType: req.file.mimetype,
-                displayName: req.file.originalname,
-            });
-            promptParts.push({
-                fileData: {
-                    mimeType: uploadResult.file.mimeType,
-                    fileUri: uploadResult.file.uri
-                }
-            });
-        }
-
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const result = await model.generateContent(promptParts);
+        const result = await model.generateContent([promptSysteme, "Problème soumis : " + issueDescription]);
         const responseText = result.response.text();
         
-        if (req.file) fs.unlinkSync(req.file.path);
-        
-        res.json({ success: true, ai_response: responseText });
+        return res.status(200).json({ success: true, ai_response: responseText });
+
     } catch (error) {
         console.error("Erreur Backend IA:", error);
-        res.status(500).json({ success: false, error: "Erreur lors de l'analyse IA." });
+        return res.status(500).json({ 
+            success: false, 
+            error: error.message || "Erreur interne du serveur d'analyse." 
+        });
     }
-});
-
-module.exports = app;
+};
