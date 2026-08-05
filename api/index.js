@@ -1,7 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 module.exports = async (req, res) => {
-    // Configuration CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -25,9 +24,9 @@ module.exports = async (req, res) => {
 
         const genAI = new GoogleGenerativeAI(apiKey);
         
-        // Utilisation de gemini-1.5-flash-latest pour éviter l'erreur 404 de l'API v1
+        // Utilisation du modèle actuel
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash-latest",
+            model: "gemini-2.5-flash",
             generationConfig: { responseMimeType: "application/json" }
         });
 
