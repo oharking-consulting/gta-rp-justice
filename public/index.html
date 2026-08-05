@@ -134,6 +134,35 @@
         .metric-label { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: var(--text-muted); }
         .metric-bar { width: 100%; height: 6px; background: #23232b; border-radius: 3px; overflow: hidden; }
         .metric-fill { height: 100%; border-radius: 3px; }
+
+        /* DROPDOWN / ACCORDÉON POUR POINTS FORTS & FAIBLES */
+        details.sol-details {
+            background: #18181b;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        details.sol-details summary {
+            font-weight: 700;
+            color: var(--text-main);
+            outline: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .details-content {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 8px;
+            color: var(--text-muted);
+        }
+        .point-fort { color: var(--accent-green); }
+        .point-faible { color: var(--accent-red); }
     </style>
 </head>
 <body>
@@ -298,7 +327,7 @@
         </div>
     </main>
 
-    <!-- SCRIPT JAVASCRIPT ROBUSTE -->
+    <!-- SCRIPT JAVASCRIPT -->
     <script>
         function setActiveNav(elementId) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -329,10 +358,10 @@
                 desc: "Deux joueurs se sont battus IC apres un differend RP. Un des deux affirme du RDM.",
                 synthese: "Un conflit oppose deux joueurs suite à une bagarre au Vanilla Unicorn, avec une accusation de RDM. La situation nécessite une vérification factuelle rapide avant toute sanction.",
                 solutions: [
-                    { titre: "Médiation directe entre les deux joueurs", desc: "Organiser un appel vocal pour qu'ils exposent leur version.", risque: 20, impact: 40, coherence: 60, difficulte: 30 },
-                    { titre: "Analyse des preuves et clips vidéo", desc: "Demander aux joueurs de fournir des clips ou logs serveur.", risque: 25, impact: 55, coherence: 85, difficulte: 50 },
-                    { titre: "Sanction temporaire avec avertissement RP", desc: "Mise en pause RP temporaire aux deux joueurs.", risque: 45, impact: 60, coherence: 70, difficulte: 40 },
-                    { titre: "Sanction ferme et exemplaire immédiate", desc: "Appliquer un bannissement temporaire du joueur fautif.", risque: 75, impact: 75, coherence: 90, difficulte: 60 }
+                    { titre: "Médiation directe entre les deux joueurs", desc: "Organiser un appel vocal pour qu'ils exposent leur version.", risque: 20, impact: 40, coherence: 60, difficulte: 30, points_forts: ["Rapide", "Désamorce les tensions"], points_faibles: ["Subjectif", "Dépend des joueurs"] },
+                    { titre: "Analyse des preuves et clips vidéo", desc: "Demander aux joueurs de fournir des clips ou logs serveur.", risque: 25, impact: 55, coherence: 85, difficulte: 50, points_forts: ["Objectif", "Irréfutable"], points_faibles: ["Temps de visionnage", "Preuves partielles"] },
+                    { titre: "Sanction temporaire avec avertissement RP", desc: "Mise en pause RP temporaire aux deux joueurs.", risque: 45, impact: 60, coherence: 70, difficulte: 40, points_forts": ["Stoppe l'escalade"], points_faibles": ["Frustrant pour les joueurs"] },
+                    { titre: "Sanction ferme et exemplaire immédiate", desc: "Appliquer un bannissement temporaire du joueur fautif.", risque: 75, impact: 75, coherence: 90, difficulte: 60, points_forts": ["Exemplarité", "Calme le serveur"], points_faibles": ["Lourd", "Impact sur l'activité"] }
                 ]
             };
             displayCaseDetails(demoData);
@@ -384,10 +413,10 @@
                     categorie: category.toUpperCase(),
                     synthese_ia: `Analyse détaillée de l'incident "${title}". La situation implique ${players} sous la catégorie ${category}. Une intervention rapide et mesurée est recommandée pour préserver l'équité du serveur.`,
                     solutions: [
-                        { id: 1, titre: "Médiation vocale directe", description: "Convoquer les deux parties en vocal pour désamorcer le conflit.", niveau_risque: 20, impact_commu: 40, coherence_rp: 80, difficulte: 30 },
-                        { id: 2, titre: "Vérification des clips et logs", description: "Analyser les preuves matérielles fournies par les enregistrements.", niveau_risque: 25, impact_commu: 55, coherence_rp: 85, difficulte: 50 },
-                        { id: 3, titre: "Avertissement formel au dossier", description: "Enregistrer un avertissement officiel dans le profil des joueurs.", niveau_risque: 45, impact_commu: 60, coherence_rp: 70, difficulte: 40 },
-                        { id: 4, titre: "Sanction d'exclusion temporaire", description: "Appliquer un bannissement temporaire immédiat pour marquer la gravité.", niveau_risque: 75, impact_commu: 75, coherence_rp: 90, difficulte: 60 }
+                        { id: 1, titre: "Médiation vocale directe", description: "Convoquer les deux parties en vocal pour désamorcer le conflit.", niveau_risque: 20, impact_commu: 40, coherence_rp: 80, difficulte: 30, points_forts: ["Rapide", "Pédagogique"], points_faibles: ["Dépend de la bonne foi"] },
+                        { id: 2, titre: "Vérification des clips et logs", description: "Analyser les preuves matérielles fournies par les enregistrements.", niveau_risque: 25, impact_commu: 55, coherence_rp: 85, difficulte: 50, points_forts: ["Objectif", "Impartial"], points_faibles: ["Nécessite des preuves"] },
+                        { id: 3, titre: "Avertissement formel au dossier", description: "Enregistrer un avertissement officiel dans le profil des joueurs.", niveau_risque: 45, impact_commu: 60, coherence_rp: 70, difficulte: 40, points_forts": ["Trace l'historique"], points_faibles": ["Peut frustrer"] },
+                        { id: 4, titre: "Sanction d'exclusion temporaire", description: "Appliquer un bannissement temporaire immédiat pour marquer la gravité.", niveau_risque: 75, impact_commu: 75, coherence_rp: 90, difficulte: 60, points_forts": ["Exemplarité immédiate"], points_faibles": ["Impact sur l'activité"] }
                     ]
                 };
             }
@@ -427,26 +456,56 @@
             data.solutions.forEach((sol, i) => {
                 const card = document.createElement('div');
                 card.className = 'sol-card';
+                
+                const r = sol.niveau_risque !== undefined ? sol.niveau_risque : sol.risque;
+                const imp = sol.impact_commu !== undefined ? sol.impact_commu : sol.impact;
+                const coh = sol.coherence_rp !== undefined ? sol.coherence_rp : sol.coherence;
+                const diff = sol.difficulte;
+                const descText = sol.description || sol.desc;
+
+                // Récupération des points forts et faibles
+                const pointsForts = sol.points_forts || ["Avantage opérationnel"];
+                const pointsFaibles = sol.points_faibles || ["Risque modéré"];
+
                 card.innerHTML = `
                     <div style="font-size:10px; font-weight:800; color:var(--text-muted);">SOLUTION #${i + 1}</div>
                     <div style="font-size:16px; font-weight:700;">${sol.titre}</div>
-                    <div style="font-size:13px; color:var(--text-muted);">${sol.description || sol.desc}</div>
+                    <div style="font-size:13px; color:var(--text-muted);">${descText}</div>
+
+                    <!-- Menu déroulant pour les points forts et faibles -->
+                    <details class="sol-details">
+                        <summary><span>🔍 Points forts & Faibles</span></summary>
+                        <div class="details-content">
+                            <div>
+                                <strong class="point-fort">✔ Points forts :</strong>
+                                <ul style="margin-left: 16px; margin-top: 4px;">
+                                    ${pointsForts.map(p => `<li>${p}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div style="margin-top: 4px;">
+                                <strong class="point-faible">✖ Points faibles :</strong>
+                                <ul style="margin-left: 16px; margin-top: 4px;">
+                                    ${pointsFaibles.map(p => `<li>${p}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
 
                     <div class="metric-row">
-                        <div class="metric-label"><span>NIVEAU DE RISQUE</span> <span>${sol.niveau_risque || sol.risque}%</span></div>
-                        <div class="metric-bar"><div class="metric-fill" style="width:${sol.niveau_risque || sol.risque}%; background:var(--accent-green);"></div></div>
+                        <div class="metric-label"><span>NIVEAU DE RISQUE</span> <span>${r}%</span></div>
+                        <div class="metric-bar"><div class="metric-fill" style="width:${r}%; background:var(--accent-green);"></div></div>
                     </div>
                     <div class="metric-row">
-                        <div class="metric-label"><span>IMPACT COMMUNAUTAIRE</span> <span>${sol.impact_commu || sol.impact}%</span></div>
-                        <div class="metric-bar"><div class="metric-fill" style="width:${sol.impact_commu || sol.impact}%; background:var(--accent-orange);"></div></div>
+                        <div class="metric-label"><span>IMPACT COMMUNAUTAIRE</span> <span>${imp}%</span></div>
+                        <div class="metric-bar"><div class="metric-fill" style="width:${imp}%; background:var(--accent-orange);"></div></div>
                     </div>
                     <div class="metric-row">
-                        <div class="metric-label"><span>COHÉRENCE RP</span> <span>${sol.coherence_rp || sol.coherence}%</span></div>
-                        <div class="metric-bar"><div class="metric-fill" style="width:${sol.coherence_rp || sol.coherence}%; background:var(--accent-red);"></div></div>
+                        <div class="metric-label"><span>COHÉRENCE RP</span> <span>${coh}%</span></div>
+                        <div class="metric-bar"><div class="metric-fill" style="width:${coh}%; background:var(--accent-red);"></div></div>
                     </div>
                     <div class="metric-row">
-                        <div class="metric-label"><span>DIFFICULTÉ</span> <span>${sol.difficulte}%</span></div>
-                        <div class="metric-bar"><div class="metric-fill" style="width:${sol.difficulte}%; background:var(--accent-orange);"></div></div>
+                        <div class="metric-label"><span>DIFFICULTÉ</span> <span>${diff}%</span></div>
+                        <div class="metric-bar"><div class="metric-fill" style="width:${diff}%; background:var(--accent-orange);"></div></div>
                     </div>
                 `;
                 grid.appendChild(card);
