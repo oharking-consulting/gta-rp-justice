@@ -267,55 +267,13 @@
                 <textarea id="caseDescription" placeholder="Faits, contexte, comportements observés, éléments RP en jeu, historique de sanctions éventuelles..."></textarea>
             </div>
 
-            async function generateSolutions() {
-    const title = document.getElementById('caseTitle').value || "Incident RP";
-    const category = document.getElementById('caseCategory').value;
-    const urgency = document.getElementById('caseUrgency').value;
-    const players = document.getElementById('casePlayers').value || "Non spécifiés";
-    const desc = document.getElementById('caseDescription').value;
-
-    if (!desc.trim()) {
-        alert("Veuillez remplir la description détaillée.");
-        return;
-    }
-
-    const hint = document.getElementById('submitHint');
-    hint.innerText = "Analyse IA en cours...";
-    hint.style.color = "var(--accent-orange)";
-
-    const fullPrompt = `Titre: ${title} | Catégorie: ${category} | Urgence: ${urgency} | Joueurs: ${players} | Description: ${desc}`;
-
-    try {
-        const response = await fetch('/api/analyze', { 
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ description: fullPrompt })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            let cleanJson = data.ai_response.replace(/```json/g, '').replace(/```/g, '').trim();
-            let parsed = JSON.parse(cleanJson);
-            parsed.status = "OUVERT";
-            parsed.severite = urgency.toUpperCase();
-            parsed.categorie = category.toUpperCase();
-            parsed.meta = `POSÉ PAR OHARK · ${new Date().toLocaleString('fr-FR')} · JOUEURS : ${players}`;
-            parsed.desc = desc;
-            parsed.synthese = parsed.synthese_ia;
-            
-            displayCaseDetails(parsed);
-        } else {
-            alert("Erreur serveur : " + (data.error || "Problème d'analyse."));
-        }
-    } catch (e) {
-        console.error(e);
-        alert("Erreur de communication avec le serveur (Vérifiez la console F12).");
-    } finally {
-        hint.innerText = "Cela peut prendre 10-20 secondes.";
-        hint.style.color = "var(--text-muted)";
-    }
-}
+            <div style="display: flex; align-items: center; gap: 16px; margin-top: 10px;">
+                <button class="btn-submit" onclick="generateSolutions()">
+                    ⚡ Générer l'analyse
+                </button>
+                <span class="submit-hint" id="submitHint">Cela peut prendre 10-20 secondes.</span>
+            </div>
+        </div>
 
         <!-- VUE DÉTAILLÉE DU CAS -->
         <div id="caseDetailView" class="case-detail-view">
@@ -340,6 +298,7 @@
         </div>
     </main>
 
+    <!-- TOUT LE SCRIPT JAVASCRIPT REGROUPÉ ET BALISÉ CORRECTEMENT -->
     <script>
         function setActiveNav(elementId) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -397,11 +356,13 @@
 
             const fullPrompt = `Titre: ${title} | Catégorie: ${category} | Urgence: ${urgency} | Joueurs: ${players} | Description: ${desc}`;
 
-            const formData = new FormData();
-            formData.append('description', fullPrompt);
-
             try {
-                const response = await fetch('/api/analyze', { method: 'POST', body: formData });
+                const response = await fetch('/api/analyze', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description: fullPrompt })
+                });
+
                 const data = await response.json();
 
                 if (data.success) {
@@ -416,11 +377,11 @@
                     
                     displayCaseDetails(parsed);
                 } else {
-                    alert("Erreur serveur : " + data.error);
+                    alert("Erreur serveur : " + (data.error || "Problème d'analyse."));
                 }
             } catch (e) {
                 console.error(e);
-                alert("Erreur de communication backend.");
+                alert("Erreur de communication avec le serveur (Vérifiez la console F12).");
             } finally {
                 hint.innerText = "Cela peut prendre 10-20 secondes.";
                 hint.style.color = "var(--text-muted)";
