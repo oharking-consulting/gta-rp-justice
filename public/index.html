@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FiveM Justice - Résolution RP</title>
+    <style>
+        :root {
+            --bg-color: #121212; --card-bg: #1e1e1e;
+            --text-main: #f5f5f5; --accent-blue: #3b82f6;
+            --accent-green: #10b981; --accent-red: #ef4444; --accent-orange: #f59e0b;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; background-color: var(--bg-color); color: var(--text-main); padding: 20px; margin: 0; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 30px; }
+        header h1 { margin: 0; color: var(--accent-blue); }
+        .input-section { background-color: var(--card-bg); padding: 25px; border-radius: 12px; margin-bottom: 40px; }
+        textarea { width: 100%; height: 120px; background-color: #2a2a2a; color: white; border: 1px solid #444; border-radius: 8px; padding: 15px; font-size: 16px; margin-bottom: 15px; resize: vertical; box-sizing: border-box; }
+        .btn-generate { background-color: var(--accent-blue); color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; transition: background 0.3s; }
+        .btn-generate:hover { background-color: #2563eb; }
+        .loading { display: none; text-align: center; margin: 20px 0; font-style: italic; color: var(--accent-orange); }
+        .solutions-section { display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 20px; border-top: 4px solid var(--accent-blue); display: flex; flex-direction: column; }
+        .card.strict { border-color: var(--accent-red); } .card.moderate { border-color: var(--accent-orange); } .card.soft { border-color: var(--accent-green); }
+        .stats { margin-bottom: 20px; background: #252525; padding: 15px; border-radius: 8px; }
+        .stat-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .progress-bar { width: 100%; background-color: #444; border-radius: 4px; height: 8px; margin-bottom: 12px; overflow: hidden; }
+        .progress-fill { height: 100%; }
+        .accordion { background-color: #2a2a2a; color: var(--text-main); cursor: pointer; padding: 12px; width: 100%; border: none; text-align: left; font-size: 15px; border-radius: 6px; margin-bottom: 5px; font-weight: bold; }
+        .panel { padding: 0 15px; background-color: #1a1a1a; max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out; margin-bottom: 10px; }
+        .pros li { color: var(--accent-green); } .cons li { color: var(--accent-red); } .panel ul li span { color: var(--text-main); }
+        .btn-apply { margin-top: auto; background-color: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 6px; cursor: pointer; }
+        .btn-apply:hover { background-color: var(--accent-green); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⚖️ FiveM Justice - RP Resolve</h1>
+        <div style="background-color: var(--card-bg); padding: 8px 15px; border-radius: 8px; border: 1px solid #333;">🟢 En Ligne</div>
+    </header>
+
+    <div class="input-section">
+        <h2>Nouveau Dossier HRP / Litige</h2>
+        <textarea id="issueInput" placeholder="Décrivez le souci en détail..."></textarea>
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom: 5px; color: #a0a0a0;">Joindre une vidéo ou clip (Optionnel) :</label>
+            <input type="file" id="videoUpload" accept="video/mp4, video/webm, video/quicktime" style="color: white;">
+        </div>
+        <button class="btn-generate" onclick="generateSolutions()">Générer les plans d'action (IA)</button>
+    </div>
+
+    <div id="loading" class="loading"></div>
+    <div id="solutionsSection" class="solutions-section"></div>
+
+    <script>
+        async function generateSolutions() {
+            const input = document.getElementById('issueInput').value;
+            const videoFile = document.getElementById('videoUpload').files[0];
+
+            if (input.trim() === '' && !videoFile) {
+                alert('Veuillez décrire le problème ou envoyer une vidéo.');
+                return;
+            }
+
+            document.getElementById('solutionsSection').style.display = 'none';
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = 'block';
+            loadingDiv.innerText = "L'IA analyse la scène et génère les décisions...";
+
+            const formData = new FormData();
+            formData.append('description', input);
+            if (videoFile) formData.append('video', videoFile);
+
+            try {
+                const response = await fetch('/api/analyze', { method: 'POST', body: formData });
+                const data = await response.json();
+                
+                loadingDiv.style.display = 'none';
+                if(data.success) renderAIResponse(data.ai_response);
+                else alert("Erreur du serveur : " + data.error);
+            } catch (err) {
+                console.error(err);
+                loadingDiv.style.display = 'none';
+                alert("Erreur de connexion.");
+            }
+        }
+
+        function renderAIResponse(aiText) {
+            let cleanJson = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+            let aiData;
+            try { aiData = JSON.parse(cleanJson); } 
+            catch (e) { alert("L'IA n'a pas renvoyé le format attendu."); return; }
+
+            const container = document.getElementById('solutionsSection');
+            container.innerHTML = '';
+
+            if (aiData.resume) {
+                const resumeDiv = document.createElement('div');
+                resumeDiv.style.gridColumn = "1 / -1";
+                resumeDiv.style.backgroundColor = "#252525";
+                resumeDiv.style.padding = "15px";
+                resumeDiv.style.borderRadius = "8px";
+                resumeDiv.style.marginBottom = "10px";
+                resumeDiv.style.borderLeft = "4px solid var(--accent-blue)";
+                resumeDiv.innerHTML = `<strong>📝 Analyse de la scène :</strong> ${aiData.resume}`;
+                container.appendChild(resumeDiv);
+            }
+
+            aiData.solutions.forEach((sol, index) => {
+                let themeClass = sol.severite === 'strict' ? 'strict' : (sol.severite === 'moderate' ? 'moderate' : 'soft');
+                let barColor = sol.severite === 'strict' ? 'var(--accent-red)' : (sol.severite === 'moderate' ? 'var(--accent-orange)' : 'var(--accent-green)');
+                let retIcon = sol.stats.retention.toLowerCase().includes('positif') ? '🟢' : (sol.stats.retention.toLowerCase().includes('négatif') ? '🔴' : '🟡');
+
+                const card = document.createElement('div');
+                card.className = `card ${themeClass}`;
+                card.innerHTML = `
+                    <h3>${index + 1}. ${sol.titre}</h3>
+                    <div class="stats">
+                        <div class="stat-line"><span>Taux de récidive :</span> <span>${sol.stats.recidive}%</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${sol.stats.recidive}%; background-color: ${barColor};"></div></div>
+                        <div class="stat-line"><span>Acceptation Commu :</span> <span>${sol.stats.acceptation}/10</span></div>
+                        <div class="stat-line"><span>Impact :</span> <span>${retIcon} ${sol.stats.retention}</span></div>
+                    </div>
+                    <button class="accordion">[ + ] Points Forts</button>
+                    <div class="panel pros"><ul>${sol.points_forts.map(pf => `<li><span>${pf}</span></li>`).join('')}</ul></div>
+                    <button class="accordion">[ + ] Points Faibles</button>
+                    <div class="panel cons"><ul>${sol.points_faibles.map(pf => `<li><span>${pf}</span></li>`).join('')}</ul></div>
+                    <button class="btn-apply" onclick="alert('Décision enregistrée !')">Appliquer</button>
+                `;
+                container.appendChild(card);
+            });
+
+            let acc = document.getElementsByClassName("accordion");
+            for (let i = 0; i < acc.length; i++) {
+                acc[i].addEventListener("click", function() {
+                    this.classList.toggle("active");
+                    let panel = this.nextElementSibling;
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null;
+                        this.innerHTML = this.innerHTML.replace(" - ", " + ");
+                    } else {
+                        panel.style.maxHeight = panel.scrollHeight + "px";
+                        this.innerHTML = this.innerHTML.replace(" + ", " - ");
+                    } 
+                });
+            }
+            container.style.display = 'grid';
+        }
+    </script>
+</body>
+</html>

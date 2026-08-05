@@ -1,0 +1,17 @@
+{
+  "name": "gta-rp-justice",
+  "version": "1.0.0",
+  "description": "Application IA pour serveur GTA RP",
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "@google/generative-ai": "^0.2.0",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
