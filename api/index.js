@@ -1,7 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 module.exports = async (req, res) => {
-    // Autoriser le CORS
+    // Configuration CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -15,23 +15,22 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const apiKey = process.env.GEMINI_API_KEY; //
+        const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
             return res.status(500).json({ 
                 success: false, 
-                error: "La clé GEMINI_API_KEY est manquante dans les variables d'environnement Vercel." 
+                error: "La clé GEMINI_API_KEY est manquante sur Vercel." 
             });
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
         
-        // Configuration JSON forcée
+        // Utilisation de gemini-1.5-flash-latest pour éviter l'erreur 404 de l'API v1
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
+            model: "gemini-1.5-flash-latest",
             generationConfig: { responseMimeType: "application/json" }
         });
 
-        // Récupération de la description transmise (soit JSON direct, soit FormData)
         let issueDescription = "";
         if (typeof req.body === 'string') {
             try { issueDescription = JSON.parse(req.body).description; } catch(e) { issueDescription = req.body; }
